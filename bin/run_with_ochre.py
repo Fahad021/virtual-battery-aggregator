@@ -28,12 +28,10 @@ battery_properties = {
     'zone': 'external',
     'initial_schedule': temperature_schedule,
 }
-battery_properties2 = battery_properties.copy()
-battery_properties2.update({
+battery_properties2 = battery_properties | {
     'capacity': 10,  # Power capacity, kW
     'capacity_kwh': 20,  # Energy capacity, kWh
-})
-
+}
 # Create 2 OCHRE battery instances
 print(f'Creating OCHRE (v{__version__}) Battery models')
 b1 = Battery(**battery_properties)

@@ -119,14 +119,14 @@ class BatteryAggregator:
                 raise Exception('Cost function is not convex.')
             for c in constraints:
                 if not c.is_dcp():
-                    raise Exception('Constraint is not valid for DCP: {}'.format(c))
+                    raise Exception(f'Constraint is not valid for DCP: {c}')
 
         if not self.problem.is_dpp():
             if not objective.is_dpp():
                 raise Exception('Cost function is not DPP.')
             for c in constraints:
                 if not c.is_dpp():
-                    raise Exception('Constraint is not DPP: {}'.format(c))
+                    raise Exception(f'Constraint is not DPP: {c}')
 
     def update_models(self, **models):
         # Update individual models and aggregated model
@@ -202,20 +202,17 @@ class BatteryAggregator:
         p_chg = self.parameters['p_chg'].value
         p_dis = self.parameters['p_dis'].value
         if 'infeasible' in self.problem.status or 'unbounded' in self.problem.status:
-            # If problem didn't solve, fail or raise a warning
             if fail_on_error:
                 raise Exception(f'Optimization failed with status {self.problem.status} and value {opt_value}.')
-            else:
-                print(f'WARNING: Optimization failed with status {self.problem.status} and value {opt_value}.')
-                setpoints = np.zeros(len(self.models))
-        elif not all([min(abs(c), abs(d)) < 0.01 for c, d in zip(p_chg, p_dis)]):
+            print(f'WARNING: Optimization failed with status {self.problem.status} and value {opt_value}.')
+            setpoints = np.zeros(len(self.models))
+        elif any(min(abs(c), abs(d)) >= 0.01 for c, d in zip(p_chg, p_dis)):
             df_params = pd.DataFrame({name: param.value for name, param in self.parameters.items()},
                                      index=self.aggregated_model_names).T
             if fail_on_error:
                 raise Exception(f'Simultaneous charging and discharging issue. Optimization values: {df_params}')
-            else:
-                print(f'Simultaneous charging and discharging issue. Optimization values: {df_params}')
-                setpoints = np.zeros(len(self.models))
+            print(f'Simultaneous charging and discharging issue. Optimization values: {df_params}')
+            setpoints = np.zeros(len(self.models))
         else:
             setpoints = p_chg - p_dis
 

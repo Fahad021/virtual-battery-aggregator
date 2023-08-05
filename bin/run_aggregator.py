@@ -12,7 +12,9 @@ models = {
     'E': (0.1, 2, 2, 0.99, 0.99),
     'F': (0.9, 2, 2, 0.98, 0.98),
 }
-models = {name: {param_name: val for param_name, val in zip(BATTERY_PARAMETERS, vals)} for name, vals in models.items()}
+models = {
+    name: dict(zip(BATTERY_PARAMETERS, vals)) for name, vals in models.items()
+}
 
 model_a = models['A']
 print(f'Battery Model A: {model_a}')
